@@ -5,6 +5,12 @@
   --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
   --color-brand-red: #E70012;
   --color-brand-dark: #1A1A1A;
+
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+  }
+  --animate-pulse-slow: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 html, body {

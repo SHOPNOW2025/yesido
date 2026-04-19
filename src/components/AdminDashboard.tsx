@@ -371,7 +371,7 @@ export const AdminDashboard: React.FC = () => {
 
                   {/* Footer Settings */}
                   <div className="space-y-4">
-                    <h4 className="font-black text-gray-800 border-b pb-2">عن المتجر (Footer)</h4>
+                    <h4 className="font-black text-gray-800 border-b pb-2">عن المتجر والسياسات (Footer & Policies)</h4>
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label className="text-xs font-bold text-gray-400">الوصف (عربي)</label>
@@ -380,6 +380,28 @@ export const AdminDashboard: React.FC = () => {
                       <div className="space-y-2">
                         <label className="text-xs font-bold text-gray-400">About (EN)</label>
                         <textarea value={siteForm.footer.about.en} onChange={e => setSiteForm({...siteForm, footer: {...siteForm.footer, about: {...siteForm.footer.about, en: e.target.value}}})} className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all h-32 text-left" dir="ltr" />
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400">سياسة الإرجاع (عربي)</label>
+                        <textarea value={siteForm.footer.returnPolicy?.ar} onChange={e => setSiteForm({...siteForm, footer: {...siteForm.footer, returnPolicy: {...(siteForm.footer.returnPolicy || {en: ''}), ar: e.target.value}}})} className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all h-32" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400">Return Policy (EN)</label>
+                        <textarea value={siteForm.footer.returnPolicy?.en} onChange={e => setSiteForm({...siteForm, footer: {...siteForm.footer, returnPolicy: {...(siteForm.footer.returnPolicy || {ar: ''}), en: e.target.value}}})} className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all h-32 text-left" dir="ltr" />
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400">سياسة الخصوصية (عربي)</label>
+                        <textarea value={siteForm.footer.privacyPolicy?.ar} onChange={e => setSiteForm({...siteForm, footer: {...siteForm.footer, privacyPolicy: {...(siteForm.footer.privacyPolicy || {en: ''}), ar: e.target.value}}})} className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all h-32" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400">Privacy Policy (EN)</label>
+                        <textarea value={siteForm.footer.privacyPolicy?.en} onChange={e => setSiteForm({...siteForm, footer: {...siteForm.footer, privacyPolicy: {...(siteForm.footer.privacyPolicy || {ar: ''}), en: e.target.value}}})} className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all h-32 text-left" dir="ltr" />
                       </div>
                     </div>
                   </div>
@@ -477,7 +499,16 @@ export const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400">المخزون (Stock)</label>
-                  <input type="number" required value={editingProduct.stock || 0} onChange={e => setEditingProduct({...editingProduct, stock: parseInt(e.target.value)})} className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all" />
+                  <input 
+                    type="number" 
+                    required 
+                    value={editingProduct.stock === undefined ? '' : editingProduct.stock} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      setEditingProduct({...editingProduct, stock: val === '' ? 0 : parseInt(val)});
+                    }} 
+                    className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all" 
+                  />
                 </div>
               </div>
 
@@ -510,11 +541,31 @@ export const AdminDashboard: React.FC = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400">السعر الأصلي (د.أ)</label>
-                  <input type="number" step="0.01" required value={editingProduct.oldPrice || editingProduct.price} onChange={e => setEditingProduct({...editingProduct, oldPrice: parseFloat(e.target.value)})} className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all" />
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    required 
+                    value={editingProduct.oldPrice === undefined ? '' : editingProduct.oldPrice} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      setEditingProduct({...editingProduct, oldPrice: val === '' ? 0 : parseFloat(val)});
+                    }} 
+                    className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all" 
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400">السعر بعد الخصم (د.أ)</label>
-                  <input type="number" step="0.01" required value={editingProduct.price} onChange={e => setEditingProduct({...editingProduct, price: parseFloat(e.target.value)})} className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all" />
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    required 
+                    value={editingProduct.price === undefined ? '' : editingProduct.price} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      setEditingProduct({...editingProduct, price: val === '' ? 0 : parseFloat(val)});
+                    }} 
+                    className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all" 
+                  />
                 </div>
               </div>
 
@@ -542,14 +593,18 @@ export const AdminDashboard: React.FC = () => {
                     <label className="text-[10px] font-bold text-red-400">سعر العرض الناري</label>
                     <input 
                       type="number" 
-                      value={editingProduct.flashOffer?.discountPrice || ''} 
-                      onChange={e => setEditingProduct({
-                        ...editingProduct, 
-                        flashOffer: { 
-                          discountPrice: parseFloat(e.target.value), 
-                          expiresAt: editingProduct.flashOffer?.expiresAt || new Date(Date.now() + 86400000).toISOString() 
-                        }
-                      })} 
+                      step="0.01"
+                      value={editingProduct.flashOffer?.discountPrice === undefined ? '' : editingProduct.flashOffer.discountPrice} 
+                      onChange={e => {
+                        const val = e.target.value;
+                        setEditingProduct({
+                          ...editingProduct, 
+                          flashOffer: { 
+                            discountPrice: val === '' ? 0 : parseFloat(val), 
+                            expiresAt: editingProduct.flashOffer?.expiresAt || new Date(Date.now() + 86400000).toISOString() 
+                          }
+                        });
+                      }} 
                       className="w-full bg-white border border-red-100 rounded-xl p-3 outline-none focus:border-brand-red" 
                     />
                   </div>

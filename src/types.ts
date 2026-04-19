@@ -29,6 +29,8 @@ export interface SiteContent {
   };
   footer: {
     about: { ar: string; en: string };
+    returnPolicy?: { ar: string; en: string };
+    privacyPolicy?: { ar: string; en: string };
   };
 }
 

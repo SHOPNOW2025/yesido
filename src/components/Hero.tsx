@@ -4,7 +4,11 @@ import { useSite } from '../SiteContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 
-export const Hero: React.FC = () => {
+interface HeroProps {
+  onCatalogOpen: (category?: string) => void;
+}
+
+export const Hero: React.FC<HeroProps> = ({ onCatalogOpen }) => {
   const { lang, t } = useTranslation();
   const { content, activeHeroKey } = useSite();
 
@@ -64,13 +68,19 @@ export const Hero: React.FC = () => {
                 {t(activeContent.subtitle)}
               </p>
               <div className={`flex flex-wrap items-center gap-4 pt-6 ${lang === 'ar' ? 'justify-end' : 'justify-start'}`}>
-                <a href="#products" className="bg-brand-red text-white px-10 py-5 rounded-2xl font-black text-lg flex items-center gap-2 hover:bg-white hover:text-brand-red transition-all shadow-2xl shadow-brand-red/40 hover:-translate-y-1">
+                <button 
+                  onClick={() => onCatalogOpen()}
+                  className="bg-brand-red text-white px-10 py-5 rounded-2xl font-black text-lg flex items-center gap-2 hover:bg-white hover:text-brand-red transition-all shadow-2xl shadow-brand-red/40 hover:-translate-y-1"
+                >
                   <span>{t(activeContent.cta)}</span>
                   {lang === 'ar' ? <ArrowLeft size={24} /> : <ChevronRight size={24} />}
-                </a>
-                <a href="#" className="border border-white/20 text-white px-10 py-5 rounded-2xl font-bold hover:bg-white/10 transition-all">
+                </button>
+                <button 
+                  onClick={() => onCatalogOpen()}
+                  className="border border-white/20 text-white px-10 py-5 rounded-2xl font-bold hover:bg-white/10 transition-all"
+                >
                   {lang === 'ar' ? 'عرض الكتالوج' : 'View Catalog'}
-                </a>
+                </button>
               </div>
             </div>
             

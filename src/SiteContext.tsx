@@ -21,7 +21,15 @@ const defaultContent: SiteContent = {
   },
   navigationHeroes: {},
   footer: {
-    about: { ar: 'متجرك الإلكتروني الموثوق للإلكترونيات والتقنية في الأردن. نوفر أفضل الأسعار مع ضمان رسمي وتوصيل سريع لجميع أنحاء المملكة.', en: 'Your trusted online store for electronics and technology in Jordan. We provide the best prices with an official warranty and fast delivery nationwide.' }
+    about: { ar: 'متجرك الإلكتروني الموثوق للإلكترونيات والتقنية في الأردن. نوفر أفضل الأسعار مع ضمان رسمي وتوصيل سريع لجميع أنحاء المملكة.', en: 'Your trusted online store for electronics and technology in Jordan. We provide the best prices with an official warranty and fast delivery nationwide.' },
+    returnPolicy: { 
+      ar: 'يمكن إرجاع المنتجات خلال 7 أيام من تاريخ الاستلام بشرط أن تكون في حالتها الأصلية وبتغليف المصنع.', 
+      en: 'Products can be returned within 7 days of receipt provided they are in their original condition and factory packaging.' 
+    },
+    privacyPolicy: { 
+      ar: 'نحن نلتزم بحماية خصوصية بياناتك. المعلومات التي نجمعها تستخدم فقط لتجهيز طلباتك وتحسين تجربة التسوق.', 
+      en: 'We are committed to protecting your data privacy. The information we collect is used only to process your orders and improve the shopping experience.' 
+    }
   }
 };
 
@@ -43,7 +51,11 @@ export const SiteProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setContent({
             ...defaultContent,
             ...data,
-            navigationHeroes: data.navigationHeroes || {}
+            navigationHeroes: data.navigationHeroes || {},
+            footer: {
+              ...defaultContent.footer,
+              ...data.footer
+            }
           });
         } else {
           // Initialize if not exists

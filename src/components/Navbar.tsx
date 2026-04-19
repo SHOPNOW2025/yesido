@@ -10,11 +10,14 @@ import { motion, AnimatePresence } from 'motion/react';
 interface NavbarProps {
   onCartOpen: () => void;
   onLoginOpen: () => void;
+  onLogoClick: () => void;
+  onCatalogOpen: (category?: string) => void;
+  onDealsOpen: () => void;
 }
 
 const LOGO_URL = "https://www.xmart.jo/cdn/shop/collections/yesido.webp?pad_color=fff&v=1735084174&width=350";
 
-export const Navbar: React.FC<NavbarProps> = ({ onCartOpen, onLoginOpen }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onCartOpen, onLoginOpen, onLogoClick, onCatalogOpen, onDealsOpen }) => {
   const { totalItems } = useCart();
   const { user } = useAuth();
   const { lang, setLang, t } = useTranslation();
@@ -26,7 +29,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onCartOpen, onLoginOpen }) => {
   };
 
   const navLinks = [
-    { ar: 'الرئيسية', en: 'Home' },
     { ar: 'وصل حديثاً', en: 'New Arrivals' },
     { ar: 'إكسسوارات السيارات', en: 'Car Accessories' },
     { ar: 'الشواحن', en: 'Chargers' },
@@ -45,27 +47,34 @@ export const Navbar: React.FC<NavbarProps> = ({ onCartOpen, onLoginOpen }) => {
             >
               <Menu size={24} />
             </button>
-            <a 
-              href="/" 
+            <button 
+              onClick={onLogoClick}
               className="flex items-center"
               onMouseEnter={() => setHeroKey(null)}
             >
               <img src={LOGO_URL} alt="Yesido Logo" className="h-12 w-auto object-contain" />
-            </a>
+            </button>
           </div>
 
           {/* Desktop Nav */}
           <div className={`hidden lg:flex items-center gap-8 text-sm font-medium text-gray-700 ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
+            <button 
+              onClick={onLogoClick}
+              onMouseEnter={() => setHeroKey(null)}
+              className="hover:text-brand-red transition-colors py-4 px-2"
+            >
+              {lang === 'ar' ? 'الرئيسية' : 'Home'}
+            </button>
             {navLinks.map(link => (
-              <a 
+              <button 
                 key={link.en} 
-                href="#" 
+                onClick={() => onCatalogOpen(t(link))}
                 onMouseEnter={() => setHeroKey(link.en)}
                 onMouseLeave={() => setHeroKey(null)}
                 className="hover:text-brand-red transition-colors py-4 px-2"
               >
                 {t(link)}
-              </a>
+              </button>
             ))}
           </div>
 
@@ -157,8 +166,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onCartOpen, onLoginOpen }) => {
                 </button>
               </div>
               <div className={`flex flex-col gap-6 text-lg font-medium ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
+                <button 
+                  onClick={() => { onLogoClick(); setMobileMenuOpen(false); }} 
+                  className="hover:text-brand-red text-right"
+                >
+                  {lang === 'ar' ? 'الرئيسية' : 'Home'}
+                </button>
                 {navLinks.map(link => (
-                  <a key={link.en} href="#" onClick={() => setMobileMenuOpen(false)} className="hover:text-brand-red">{t(link)}</a>
+                  <button 
+                    key={link.en} 
+                    onClick={() => { onCatalogOpen(t(link)); setMobileMenuOpen(false); }} 
+                    className="hover:text-brand-red text-right"
+                  >
+                    {t(link)}
+                  </button>
                 ))}
               </div>
             </motion.div>
