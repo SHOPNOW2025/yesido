@@ -12,7 +12,6 @@ import { motion } from 'motion/react';
 const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY;
 
 const NAV_LINKS = [
-  { ar: 'الرئيسية', en: 'Home' },
   { ar: 'وصل حديثاً', en: 'New Arrivals' },
   { ar: 'إكسسوارات السيارات', en: 'Car Accessories' },
   { ar: 'الشواحن', en: 'Chargers' },

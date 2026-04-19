@@ -20,12 +20,12 @@ import { motion } from 'motion/react';
 import { ChevronRight, ArrowLeft, X } from 'lucide-react';
 
 const DEFAULT_CATEGORIES = [
-  { id: '1', ar: 'شواحن', en: 'Chargers', icon: '📱' },
-  { id: '2', ar: 'كوابل', en: 'Cables', icon: '🔌' },
-  { id: '3', ar: 'سماعات', en: 'Headphones', icon: '🎧' },
-  { id: '4', ar: 'حوامل', en: 'Holders', icon: '🧲' },
-  { id: '5', ar: 'ساعات', en: 'Watches', icon: '⌚' },
-  { id: '6', ar: 'حماية', en: 'Protection', icon: '🛡️' }
+  { id: 'new', ar: 'وصل حديثاً', en: 'New Arrivals', icon: '✨' },
+  { id: 'car', ar: 'إكسسوارات السيارات', en: 'Car Accessories', icon: '🚗' },
+  { id: 'chargers', ar: 'الشواحن', en: 'Chargers', icon: '📱' },
+  { id: 'headphones', ar: 'السماعات', en: 'Headphones', icon: '🎧' },
+  { id: 'cables', ar: 'كوابل', en: 'Cables', icon: '🔌' },
+  { id: 'holders', ar: 'حوامل', en: 'Holders', icon: '🧲' }
 ];
 
 import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, Link } from 'react-router-dom';

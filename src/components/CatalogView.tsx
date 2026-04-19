@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from '../LanguageContext';
 import { Product, Category } from '../types';
 import { ProductCard } from './ProductCard';
@@ -16,6 +16,14 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ products, categories, 
   const { lang, t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory || null);
   const [onlyDeals, setOnlyDeals] = useState(showDealsOnly);
+
+  useEffect(() => {
+    setSelectedCategory(initialCategory || null);
+  }, [initialCategory]);
+
+  useEffect(() => {
+    setOnlyDeals(showDealsOnly);
+  }, [showDealsOnly]);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'price-low' | 'price-high'>('newest');
   const [showFilters, setShowFilters] = useState(false);
