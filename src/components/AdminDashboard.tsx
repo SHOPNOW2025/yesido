@@ -8,7 +8,7 @@ import { PRODUCTS } from '../data';
 import { Plus, Edit, Trash2, Save, X, Globe, Layout, Package, Upload, Image as ImageIcon, Loader2, Flame } from 'lucide-react';
 import { motion } from 'motion/react';
 
-const IMGBB_API_KEY = 'a16fdd9aead1214d64e435c9b83a0c2e';
+const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY;
 
 const NAV_LINKS = [
   { ar: 'الرئيسية', en: 'Home' },
