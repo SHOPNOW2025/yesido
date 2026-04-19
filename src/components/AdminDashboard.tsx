@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { useSite } from '../SiteContext';
+import { useTranslation } from '../LanguageContext';
 import { db } from '../firebase';
 import { collection, getDocs, addDoc, updateDoc, setDoc, deleteDoc, doc } from 'firebase/firestore';
 import { Product, SiteContent, Category } from '../types';
@@ -21,6 +22,7 @@ const NAV_LINKS = [
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const { content, updateContent } = useSite();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'site' | 'dynamicHeroes'>('products');
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -276,7 +278,7 @@ export const AdminDashboard: React.FC = () => {
                     <div key={p.id} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex gap-4">
                       <img src={p.image} className="w-20 h-20 rounded-2xl object-cover bg-gray-50" referrerPolicy="no-referrer" />
                       <div className="flex-1">
-                        <h4 className="font-bold text-gray-800 line-clamp-1">{p.name.ar}</h4>
+                        <h4 className="font-bold text-gray-800 line-clamp-1">{t(p.name)}</h4>
                         <p className="text-brand-red font-bold">{p.price} د.أ</p>
                         <div className="flex items-center gap-2 mt-4">
                           <button onClick={() => setEditingProduct(p)} className="p-2 bg-gray-50 text-gray-500 rounded-xl hover:text-brand-red transition-colors"><Edit size={16} /></button>
@@ -307,8 +309,8 @@ export const AdminDashboard: React.FC = () => {
                         {c.icon.startsWith('http') ? <img src={c.icon} className="w-8 h-8 object-contain" /> : c.icon}
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-bold text-gray-800">{c.name.ar}</h4>
-                        <p className="text-xs text-gray-400 font-mono">{c.name.en}</p>
+                        <h4 className="font-bold text-gray-800">{t(c.name)}</h4>
+                        <p className="text-xs text-gray-400 font-mono">{t(c.name)}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <button onClick={() => setEditingCategory(c)} className="p-2 text-gray-400 hover:text-brand-red transition-colors"><Edit size={16} /></button>
@@ -333,6 +335,31 @@ export const AdminDashboard: React.FC = () => {
                 </div>
 
                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-8">
+                  {/* Global SEO Settings */}
+                  <div className="space-y-4">
+                    <h4 className="font-black text-gray-800 border-b pb-2">إعدادات محركات البحث (SEO Settings)</h4>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400">عنوان الموقع الرئيسي (عربي)</label>
+                        <input value={siteForm.title?.ar || ''} onChange={e => setSiteForm({...siteForm, title: {...(siteForm.title || {en: ''}), ar: e.target.value}})} placeholder="يسيدو الأصلي الأردن" className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400">Main Site Title (EN)</label>
+                        <input value={siteForm.title?.en || ''} onChange={e => setSiteForm({...siteForm, title: {...(siteForm.title || {ar: ''}), en: e.target.value}})} placeholder="Original Yesido Jordan" className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all" dir="ltr" />
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400">وصف الموقع الرئيسي (Meta Description - عربي)</label>
+                        <textarea value={siteForm.metaDescription?.ar || ''} onChange={e => setSiteForm({...siteForm, metaDescription: {...(siteForm.metaDescription || {en: ''}), ar: e.target.value}})} className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all h-20" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400">Main Meta Description (EN)</label>
+                        <textarea value={siteForm.metaDescription?.en || ''} onChange={e => setSiteForm({...siteForm, metaDescription: {...(siteForm.metaDescription || {ar: ''}), en: e.target.value}})} className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all h-20 text-left" dir="ltr" />
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Hero Settings */}
                   <div className="space-y-4">
                     <h4 className="font-black text-gray-800 border-b pb-2">قسم الهيرو (Hero Section)</h4>
@@ -484,7 +511,7 @@ export const AdminDashboard: React.FC = () => {
                     required 
                     value={editingProduct.category?.en} 
                     onChange={e => {
-                      const selectedCat = categories.find(c => c.name.en === e.target.value);
+                      const selectedCat = categories.find(c => c.name?.en === e.target.value);
                       if (selectedCat) {
                         setEditingProduct({...editingProduct, category: selectedCat.name});
                       }
@@ -577,6 +604,29 @@ export const AdminDashboard: React.FC = () => {
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400">Description (EN)</label>
                   <textarea required value={editingProduct.description?.en} onChange={e => setEditingProduct({...editingProduct, description: {...editingProduct.description!, en: e.target.value}})} className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all h-24 text-left" dir="ltr" />
+                </div>
+              </div>
+
+              {/* SEO Meta Description */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400">وصف SEO (Meta Description - عربي)</label>
+                  <textarea 
+                    value={editingProduct.metaDescription?.ar || ''} 
+                    onChange={e => setEditingProduct({...editingProduct, metaDescription: {...(editingProduct.metaDescription || {en: '', ar: ''}), ar: e.target.value}})} 
+                    placeholder="وصف مختصر لمحركات البحث..."
+                    className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all h-20" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-gray-400">SEO Description (Meta Description - EN)</label>
+                  <textarea 
+                    value={editingProduct.metaDescription?.en || ''} 
+                    onChange={e => setEditingProduct({...editingProduct, metaDescription: {...(editingProduct.metaDescription || {ar: '', en: ''}), en: e.target.value}})} 
+                    placeholder="Short description for search engines..."
+                    className="w-full bg-gray-50 border rounded-2xl p-4 outline-none focus:border-brand-red transition-all h-20 text-left" 
+                    dir="ltr"
+                  />
                 </div>
               </div>
 
@@ -680,7 +730,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400">العنوان الرئيسي (عربي)</label>
                   <input 
-                    value={siteForm.navigationHeroes?.[editingHeroKey]?.title.ar || ''} 
+                    value={siteForm.navigationHeroes?.[editingHeroKey]?.title?.ar || ''} 
                     onChange={e => {
                       const current = siteForm.navigationHeroes?.[editingHeroKey] || { badge: { ar: '', en: '' }, title: { ar: '', en: '' }, subtitle: { ar: '', en: '' }, cta: { ar: '', en: '' }, image: '' };
                       setSiteForm({
@@ -697,7 +747,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400">Title (EN)</label>
                   <input 
-                    value={siteForm.navigationHeroes?.[editingHeroKey]?.title.en || ''} 
+                    value={siteForm.navigationHeroes?.[editingHeroKey]?.title?.en || ''} 
                     onChange={e => {
                       const current = siteForm.navigationHeroes?.[editingHeroKey] || { badge: { ar: '', en: '' }, title: { ar: '', en: '' }, subtitle: { ar: '', en: '' }, cta: { ar: '', en: '' }, image: '' };
                       setSiteForm({
@@ -717,7 +767,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400">الوصف (عربي)</label>
                   <textarea 
-                    value={siteForm.navigationHeroes?.[editingHeroKey]?.subtitle.ar || ''} 
+                    value={siteForm.navigationHeroes?.[editingHeroKey]?.subtitle?.ar || ''} 
                     onChange={e => {
                       const current = siteForm.navigationHeroes?.[editingHeroKey] || { badge: { ar: '', en: '' }, title: { ar: '', en: '' }, subtitle: { ar: '', en: '' }, cta: { ar: '', en: '' }, image: '' };
                       setSiteForm({
@@ -734,7 +784,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-400">Subtitle (EN)</label>
                   <textarea 
-                    value={siteForm.navigationHeroes?.[editingHeroKey]?.subtitle.en || ''} 
+                    value={siteForm.navigationHeroes?.[editingHeroKey]?.subtitle?.en || ''} 
                     onChange={e => {
                       const current = siteForm.navigationHeroes?.[editingHeroKey] || { badge: { ar: '', en: '' }, title: { ar: '', en: '' }, subtitle: { ar: '', en: '' }, cta: { ar: '', en: '' }, image: '' };
                       setSiteForm({

@@ -26,10 +26,10 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ products, categories, 
         const isOnSale = p.oldPrice && p.oldPrice > p.price || p.flashOffer;
         if (onlyDeals && !isOnSale) return false;
         
-        const matchesCategory = !selectedCategory || p.category.ar === selectedCategory || p.category.en === selectedCategory;
+        const matchesCategory = !selectedCategory || p.category?.ar === selectedCategory || p.category?.en === selectedCategory;
         const matchesSearch = !searchQuery || 
-          p.name.ar.toLowerCase().includes(searchQuery.toLowerCase()) || 
-          p.name.en.toLowerCase().includes(searchQuery.toLowerCase());
+          p.name?.ar?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+          p.name?.en?.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
       })
       .sort((a, b) => {

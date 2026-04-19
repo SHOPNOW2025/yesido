@@ -7,6 +7,8 @@ import { useSite } from '../SiteContext';
 import { auth } from '../firebase';
 import { motion, AnimatePresence } from 'motion/react';
 
+import { Link } from 'react-router-dom';
+
 interface NavbarProps {
   onCartOpen: () => void;
   onLoginOpen: () => void;
@@ -47,35 +49,41 @@ export const Navbar: React.FC<NavbarProps> = ({ onCartOpen, onLoginOpen, onLogoC
             >
               <Menu size={24} />
             </button>
-            <button 
-              onClick={onLogoClick}
+            <Link 
+              to="/"
               className="flex items-center"
               onMouseEnter={() => setHeroKey(null)}
             >
               <img src={LOGO_URL} alt="Yesido Logo" className="h-12 w-auto object-contain" />
-            </button>
+            </Link>
           </div>
 
           {/* Desktop Nav */}
           <div className={`hidden lg:flex items-center gap-8 text-sm font-medium text-gray-700 ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
-            <button 
-              onClick={onLogoClick}
+            <Link 
+              to="/"
               onMouseEnter={() => setHeroKey(null)}
               className="hover:text-brand-red transition-colors py-4 px-2"
             >
               {lang === 'ar' ? 'الرئيسية' : 'Home'}
-            </button>
+            </Link>
             {navLinks.map(link => (
-              <button 
+              <Link 
                 key={link.en} 
-                onClick={() => onCatalogOpen(t(link))}
+                to={`/catalog/${t(link)}`}
                 onMouseEnter={() => setHeroKey(link.en)}
                 onMouseLeave={() => setHeroKey(null)}
                 className="hover:text-brand-red transition-colors py-4 px-2"
               >
                 {t(link)}
-              </button>
+              </Link>
             ))}
+            <Link 
+              to="/deals"
+              className="hover:text-brand-red transition-colors py-4 px-2"
+            >
+              {lang === 'ar' ? 'العروض' : 'Deals'}
+            </Link>
           </div>
 
           {/* Actions */}
@@ -166,21 +174,30 @@ export const Navbar: React.FC<NavbarProps> = ({ onCartOpen, onLoginOpen, onLogoC
                 </button>
               </div>
               <div className={`flex flex-col gap-6 text-lg font-medium ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-                <button 
-                  onClick={() => { onLogoClick(); setMobileMenuOpen(false); }} 
+                <Link 
+                  to="/" 
+                  onClick={() => setMobileMenuOpen(false)} 
                   className="hover:text-brand-red text-right"
                 >
                   {lang === 'ar' ? 'الرئيسية' : 'Home'}
-                </button>
+                </Link>
                 {navLinks.map(link => (
-                  <button 
+                  <Link 
                     key={link.en} 
-                    onClick={() => { onCatalogOpen(t(link)); setMobileMenuOpen(false); }} 
+                    to={`/catalog/${t(link)}`}
+                    onClick={() => setMobileMenuOpen(false)} 
                     className="hover:text-brand-red text-right"
                   >
                     {t(link)}
-                  </button>
+                  </Link>
                 ))}
+                <Link 
+                  to="/deals" 
+                  onClick={() => setMobileMenuOpen(false)} 
+                  className="hover:text-brand-red text-right font-bold text-brand-red"
+                >
+                   {lang === 'ar' ? 'العروض' : 'Deals'}
+                </Link>
               </div>
             </motion.div>
           </>

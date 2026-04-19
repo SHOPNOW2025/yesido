@@ -28,9 +28,23 @@ const DEFAULT_CATEGORIES = [
   { id: '6', ar: 'حماية', en: 'Protection', icon: '🛡️' }
 ];
 
-function StoreLayout() {
-  const [view, setView] = useState<'home' | 'catalog' | 'deals'>('home');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, Link } from 'react-router-dom';
+import { ProductDetails } from './components/ProductDetails';
+import { SEO } from './components/SEO';
+
+function Store() {
+  const { view: routeView, categoryName } = useParams<{ view: string, categoryName: string }>();
+  const navigate = useNavigate();
+  // Map route param to internal view state
+  const view = (routeView as 'home' | 'catalog' | 'deals') || 'home';
+  
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryName || null);
+  
+  useEffect(() => {
+    if (categoryName) {
+      setSelectedCategory(categoryName);
+    }
+  }, [categoryName]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [activePolicy, setActivePolicy] = useState<'return' | 'privacy' | null>(null);
@@ -62,7 +76,6 @@ function StoreLayout() {
         setCategories(cats.length > 0 ? cats : DEFAULT_CATEGORIES.map(c => ({ id: c.id, name: { ar: c.ar, en: c.en }, icon: c.icon })));
       } catch (err) {
         console.error("Firebase connection error:", err);
-        // Fallback to defaults on error
         setProducts([]);
         setCategories(DEFAULT_CATEGORIES.map(c => ({ id: c.id, name: { ar: c.ar, en: c.en }, icon: c.icon })));
       } finally {
@@ -72,30 +85,33 @@ function StoreLayout() {
 
     fetchInitialData();
 
-    // Custom event to switch to admin view
     window.addEventListener('show-admin', () => setShowAdmin(true));
     window.addEventListener('hide-admin', () => setShowAdmin(false));
   }, []);
 
   const openCatalog = (category?: string) => {
-    setSelectedCategory(category || null);
-    setView('catalog');
+    if (category) {
+      navigate(`/catalog/${category}`);
+    } else {
+      navigate('/catalog');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const openDeals = () => {
-    setView('deals');
+    navigate('/deals');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const goHome = () => {
-    setView('home');
+    navigate('/');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (showAdmin) {
     return (
       <>
+        <SEO title="لوحة التحكم | Admin Dashboard" />
         <Navbar 
           onCartOpen={() => setIsCartOpen(true)} 
           onLoginOpen={() => setIsLoginOpen(true)} 
@@ -116,6 +132,11 @@ function StoreLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
+      <SEO 
+        title={view === 'home' ? '' : (view === 'catalog' ? (lang === 'ar' ? 'الكتالوج' : 'Catalog') : (lang === 'ar' ? 'العروض' : 'Deals'))}
+        description={t(content.metaDescription)}
+      />
+      
       <Navbar 
         onCartOpen={() => setIsCartOpen(true)} 
         onLoginOpen={() => setIsLoginOpen(true)}
@@ -132,13 +153,13 @@ function StoreLayout() {
           <section className="py-12 bg-white">
              <div className="container mx-auto px-4">
                 <div className={`flex items-center justify-between mb-10 ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
-                   <button 
-                     onClick={() => openCatalog()}
+                   <Link 
+                     to="/catalog"
                      className="text-brand-red font-bold text-sm flex items-center gap-1 hover:underline"
                    >
                       <span>{lang === 'ar' ? 'عرض الكل' : 'View All'}</span>
                       <ChevronRight size={16} className={lang === 'ar' ? '' : 'rotate-180'} />
-                   </button>
+                   </Link>
                    <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3">
                       <span className="w-2 h-8 bg-brand-red rounded-full" />
                       {lang === 'ar' ? 'التصنيفات المميزة' : 'Featured Categories'}
@@ -149,17 +170,21 @@ function StoreLayout() {
                     <motion.div 
                       key={cat.id}
                       whileHover={{ y: -8 }}
-                      onClick={() => openCatalog(t(cat.name))}
-                      className="group cursor-pointer bg-gray-50 rounded-3xl p-6 text-center border border-gray-100 hover:border-brand-red/30 transition-all"
+                      className="group"
                     >
-                      <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform overflow-hidden p-1">
-                         {cat.icon.startsWith('http') ? (
-                           <img src={cat.icon} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                         ) : (
-                           <span className="text-3xl text-brand-red">{cat.icon}</span>
-                         )}
-                      </div>
-                      <span className="font-bold text-gray-700">{t(cat.name)}</span>
+                      <Link 
+                        to={`/catalog/${t(cat.name)}`}
+                        className="block bg-gray-50 rounded-3xl p-6 text-center border border-gray-100 hover:border-brand-red/30 transition-all font-sans"
+                      >
+                        <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform overflow-hidden p-1">
+                           {cat.icon.startsWith('http') ? (
+                             <img src={cat.icon} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                           ) : (
+                             <span className="text-3xl text-brand-red">{cat.icon}</span>
+                           )}
+                        </div>
+                        <span className="font-bold text-gray-700">{t(cat.name)}</span>
+                      </Link>
                     </motion.div>
                   ))}
                 </div>
@@ -299,10 +324,104 @@ export default function App() {
       <LanguageProvider>
         <SiteProvider>
           <CartProvider>
-            <StoreLayout />
+            <Router>
+              <Routes>
+                <Route path="/" element={<Store />} />
+                <Route path="/:view" element={<Store />} />
+                <Route path="/catalog/:categoryName" element={<Store />} />
+                <Route path="/product/:productId" element={
+                  <>
+                    <NavbarWrapper />
+                    <ProductDetails />
+                    <FooterWrapper />
+                  </>
+                } />
+              </Routes>
+            </Router>
           </CartProvider>
         </SiteProvider>
       </LanguageProvider>
     </AuthProvider>
+  );
+}
+
+// Helper components for shared sections if needed outside Store layout
+function NavbarWrapper() {
+  const navigate = useNavigate();
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  
+  return (
+    <>
+      <Navbar 
+        onCartOpen={() => setIsCartOpen(true)} 
+        onLoginOpen={() => setIsLoginOpen(true)}
+        onLogoClick={() => navigate('/')}
+        onCatalogOpen={(cat) => navigate('/catalog', { state: { category: cat } })}
+        onDealsOpen={() => navigate('/deals')}
+      />
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <LoginForm isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+    </>
+  );
+}
+
+function FooterWrapper() {
+  const { lang, t } = useTranslation();
+  const { content } = useSite();
+  const [activePolicy, setActivePolicy] = useState<'return' | 'privacy' | null>(null);
+
+  return (
+    <footer className="py-20 border-t border-gray-100 bg-white">
+       <div className="container mx-auto px-4 text-center space-y-6">
+          <img src="https://www.xmart.jo/cdn/shop/collections/yesido.webp?pad_color=fff&v=1735084174&width=350" alt="Footer Logo" className="h-14 mx-auto" />
+          <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
+            {t(content.footer.about)}
+          </p>
+          <div className="flex flex-wrap justify-center gap-6 py-4">
+            <button 
+              onClick={() => setActivePolicy('return')}
+              className="text-gray-600 font-bold hover:text-brand-red transition-colors"
+            >
+              {lang === 'ar' ? 'سياسة الإرجاع' : 'Return Policy'}
+            </button>
+            <button 
+              onClick={() => setActivePolicy('privacy')}
+              className="text-gray-600 font-bold hover:text-brand-red transition-colors"
+            >
+              {lang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy'}
+            </button>
+          </div>
+          <div className="pt-10 border-t border-gray-100">
+             <p className="text-gray-400 text-sm">
+               {lang === 'ar' ? '© 2024 متجر يسيدو الأصلي. جميع الحقوق محفوظة.' : '© 2024 Original Yesido Store. All rights reserved.'}
+              </p>
+          </div>
+       </div>
+
+      {activePolicy && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setActivePolicy(null)} />
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }} 
+            animate={{ scale: 1, opacity: 1 }} 
+            className="relative bg-white w-full max-w-2xl rounded-[2.5rem] p-10 shadow-2xl max-h-[80vh] overflow-y-auto"
+          >
+            <button 
+              onClick={() => setActivePolicy(null)}
+              className={`absolute top-6 ${lang === 'ar' ? 'left-6' : 'right-6'} p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-all`}
+            >
+              <X size={24} className="text-gray-500" />
+            </button>
+            <h3 className="text-3xl font-black text-gray-800 mb-8 border-b pb-4">
+              {activePolicy === 'return' ? (lang === 'ar' ? 'سياسة الإرجاع' : 'Return Policy') : (lang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy')}
+            </h3>
+            <div className={`text-gray-600 text-lg leading-relaxed whitespace-pre-wrap ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
+              {activePolicy === 'return' ? t(content.footer.returnPolicy!) : t(content.footer.privacyPolicy!)}
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </footer>
   );
 }

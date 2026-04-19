@@ -1,11 +1,26 @@
 import React, { useState } from 'react';
-import { X, Minus, Plus, Trash2, Send, Loader2 } from 'lucide-react';
+import { X, Minus, Plus, Trash2, Send, Loader2, MapPin } from 'lucide-react';
 import { useCart } from '../CartContext';
 import { useAuth } from '../AuthContext';
 import { useTranslation } from '../LanguageContext';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
+
+const GOVERNORATES = [
+  { ar: 'عمان', en: 'Amman', cost: 3 },
+  { ar: 'الزرقاء', en: 'Zarqa', cost: 5 },
+  { ar: 'إربد', en: 'Irbid', cost: 5 },
+  { ar: 'البلقاء', en: 'Balqa', cost: 5 },
+  { ar: 'مأدبا', en: 'Madaba', cost: 5 },
+  { ar: 'المفرق', en: 'Mafraq', cost: 5 },
+  { ar: 'جرش', en: 'Jerash', cost: 5 },
+  { ar: 'عجلون', en: 'Ajloun', cost: 5 },
+  { ar: 'الكرك', en: 'Karak', cost: 5 },
+  { ar: 'الطفيلة', en: 'Tafilah', cost: 5 },
+  { ar: 'معان', en: 'Ma\'an', cost: 5 },
+  { ar: 'العقبة', en: 'Aqaba', cost: 5 },
+];
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -17,8 +32,18 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const { t, lang } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedGov, setSelectedGov] = useState<string>('');
+
+  const shippingInfo = GOVERNORATES.find(g => g.en === selectedGov || g.ar === selectedGov);
+  const shippingCost = shippingInfo ? shippingInfo.cost : 0;
+  const finalTotal = totalPrice + shippingCost;
 
   const handleWhatsAppCheckout = async () => {
+    if (!selectedGov) {
+      alert(lang === 'ar' ? "يرجى اختيار المحافظة لتحديد تكلفة التوصيل" : "Please select a governorate to determine shipping cost");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const orderNumber = Math.floor(100000 + Math.random() * 900000);
@@ -32,7 +57,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
           quantity: item.quantity,
           price: item.price
         })),
-        totalPrice,
+        totalPrice: finalTotal,
+        shippingCost,
+        governorate: selectedGov,
         customer: user ? {
           uid: user.uid,
           email: user.email,
@@ -48,13 +75,16 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
       let message = `*طلب جديد من متجر Yesido*\n`;
       message += `*رقم الطلب:* #${orderNumber}\n`;
       if (user?.email) message += `*العميل:* ${user.email}\n`;
+      message += `*المحافظة:* ${selectedGov}\n`;
       message += `\n*المنتجات:*\n`;
       
       cart.forEach((item, index) => {
         message += `${index + 1}. ${t(item.name)} (x${item.quantity}) - ${item.price * item.quantity} د.أ\n`;
       });
       
-      message += `\n*المجموع الكلي:* ${totalPrice.toFixed(2)} د.أ\n`;
+      message += `\n*مجموع المنتجات:* ${totalPrice.toFixed(2)} د.أ\n`;
+      message += `*تكلفة التوصيل:* ${shippingCost.toFixed(2)} د.أ\n`;
+      message += `*المجموع الكلي:* ${finalTotal.toFixed(2)} د.أ\n`;
       message += `\nيرجى تأكيد هذا الطلب.`;
       
       const encodedMessage = encodeURIComponent(message);
@@ -124,52 +154,90 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                   </button>
                 </div>
               ) : (
-                cart.map((item) => (
-                  <div key={item.id} className={`flex gap-4 group ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
-                    <div className="w-20 h-20 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
-                      <img src={item.image} alt={t(item.name)} className="w-full h-full object-cover" />
-                    </div>
-                    <div className={`flex-1 flex flex-col justify-between ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-                      <div className={`flex justify-between gap-2 ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
-                        <h3 className="text-sm font-bold text-gray-800 line-clamp-2">{t(item.name)}</h3>
-                        <button 
-                          onClick={() => removeFromCart(item.id)}
-                          className="text-gray-300 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                      <div className={`flex items-center justify-between mt-2 ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
-                        <div className={`flex items-center gap-3 bg-gray-50 rounded-full p-1 border border-gray-100 ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
-                          <button 
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 hover:text-brand-red"
-                          >
-                            <Minus size={14} />
-                          </button>
-                          <span className="text-sm font-bold min-w-[20px] text-center">{item.quantity}</span>
-                          <button 
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 hover:text-brand-red"
-                          >
-                            <Plus size={14} />
-                          </button>
+                <>
+                  <div className="space-y-6">
+                    {cart.map((item) => (
+                      <div key={item.id} className={`flex gap-4 group ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
+                        <div className="w-20 h-20 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
+                          <img src={item.image} alt={t(item.name)} className="w-full h-full object-cover" />
                         </div>
-                        <span className="font-bold text-brand-red">{(item.price * item.quantity).toFixed(2)} {lang === 'ar' ? 'د.أ' : 'JOD'}</span>
+                        <div className={`flex-1 flex flex-col justify-between ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
+                          <div className={`flex justify-between gap-2 ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
+                            <h3 className="text-sm font-bold text-gray-800 line-clamp-2">{t(item.name)}</h3>
+                            <button 
+                              onClick={() => removeFromCart(item.id)}
+                              className="text-gray-300 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                          <div className={`flex items-center justify-between mt-2 ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
+                            <div className={`flex items-center gap-3 bg-gray-50 rounded-full p-1 border border-gray-100 ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
+                              <button 
+                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                className="w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 hover:text-brand-red"
+                              >
+                                <Minus size={14} />
+                              </button>
+                              <span className="text-sm font-bold min-w-[20px] text-center">{item.quantity}</span>
+                              <button 
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                className="w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 hover:text-brand-red"
+                              >
+                                <Plus size={14} />
+                              </button>
+                            </div>
+                            <span className="font-bold text-brand-red">{(item.price * item.quantity).toFixed(2)} {lang === 'ar' ? 'د.أ' : 'JOD'}</span>
+                          </div>
+                        </div>
                       </div>
+                    ))}
+                  </div>
+
+                  {/* Shipping Selection */}
+                  <div className="pt-6 border-t border-gray-100 space-y-4">
+                    <div className={`flex items-center gap-2 ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
+                      <MapPin size={18} className="text-brand-red" />
+                      <h4 className="font-bold text-gray-800">{lang === 'ar' ? 'معلومات التوصيل' : 'Shipping Information'}</h4>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs text-gray-400 font-bold px-1">{lang === 'ar' ? 'اختر المحافظة' : 'Select Governorate'}</label>
+                      <select 
+                        value={selectedGov}
+                        onChange={(e) => setSelectedGov(e.target.value)}
+                        className={`w-full bg-gray-50 border border-gray-100 rounded-xl p-4 outline-none focus:border-brand-red transition-all appearance-none font-bold text-sm ${lang === 'ar' ? 'text-right' : 'text-left'}`}
+                      >
+                        <option value="">{lang === 'ar' ? '-- اختر من هنا --' : '-- Select here --'}</option>
+                        {GOVERNORATES.map(g => (
+                          <option key={g.en} value={lang === 'ar' ? g.ar : g.en}>
+                            {lang === 'ar' ? g.ar : g.en} ({g.cost} {lang === 'ar' ? 'د.أ' : 'JOD'})
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
-                ))
+                </>
               )}
             </div>
 
             {/* Footer */}
             {cart.length > 0 && (
               <div className="p-6 border-t border-gray-100 bg-gray-50 space-y-4">
-                <div className={`flex items-center justify-between text-lg ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
-                  <span className="text-gray-500 font-medium">{lang === 'ar' ? 'المجموع الكلي:' : 'Total Subtotal:'}</span>
-                  <span className="text-2xl font-black text-brand-red">{totalPrice.toFixed(2)} {lang === 'ar' ? 'د.أ' : 'JOD'}</span>
+                <div className="space-y-2">
+                  <div className={`flex items-center justify-between text-sm ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
+                    <span className="text-gray-400">{lang === 'ar' ? 'مجموع المنتجات:' : 'Subtotal:'}</span>
+                    <span className="font-bold text-gray-700">{totalPrice.toFixed(2)} {lang === 'ar' ? 'د.أ' : 'JOD'}</span>
+                  </div>
+                  <div className={`flex items-center justify-between text-sm ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
+                    <span className="text-gray-400">{lang === 'ar' ? 'تكلفة التوصيل:' : 'Shipping Cost:'}</span>
+                    <span className="font-bold text-gray-700">{shippingCost.toFixed(2)} {lang === 'ar' ? 'د.أ' : 'JOD'}</span>
+                  </div>
+                  <div className={`flex items-center justify-between text-lg pt-2 border-t border-gray-200 ${lang === 'ar' ? 'flex-row' : 'flex-row-reverse'}`}>
+                    <span className="text-gray-500 font-black">{lang === 'ar' ? 'المجموع الكلي:' : 'Order Total:'}</span>
+                    <span className="text-2xl font-black text-brand-red">{finalTotal.toFixed(2)} {lang === 'ar' ? 'د.أ' : 'JOD'}</span>
+                  </div>
                 </div>
+
                 <div className="space-y-3">
                   <button 
                     onClick={handleWhatsAppCheckout}
@@ -183,8 +251,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                     )}
                     <span>{isSubmitting ? (lang === 'ar' ? 'جاري معالجة الطلب...' : 'Processing...') : (lang === 'ar' ? 'إرسال الطلب عبر واتساب' : 'Checkout via WhatsApp')}</span>
                   </button>
-                  <p className="text-[10px] text-center text-gray-400">
-                    {lang === 'ar' ? 'عند الضغط سيتم توجيهك إلى واتساب لإتمام الطلب مع رقم طلب فريد.' : 'You will be redirected to WhatsApp to complete your order.'}
+                  <p className="text-[10px] text-center text-gray-400 italic">
+                    {lang === 'ar' ? '* التوصيل لمحفظة عمان 3 دنانير وباقي المحافظات 5 دنانير.' : '* Shipping to Amman is 3 JOD, other governorates 5 JOD.'}
                   </p>
                 </div>
               </div>

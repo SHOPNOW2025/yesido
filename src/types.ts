@@ -7,6 +7,7 @@ export interface Product {
   image: string; // Keep for compatibility
   category: { ar: string; en: string };
   description: { ar: string; en: string };
+  metaDescription?: { ar: string; en: string };
   stock: number;
   flashOffer?: {
     discountPrice: number;
@@ -23,6 +24,8 @@ export interface HeroContent {
 }
 
 export interface SiteContent {
+  title?: { ar: string; en: string };
+  metaDescription?: { ar: string; en: string };
   hero: HeroContent;
   navigationHeroes: {
     [key: string]: HeroContent;

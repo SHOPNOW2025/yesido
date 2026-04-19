@@ -25,8 +25,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const dir = lang === 'ar' ? 'rtl' : 'ltr';
 
-  const t = (content: { ar: string; en: string }) => {
-    return content[lang] || content['ar'];
+  const t = (content: { ar: string; en: string } | undefined | null) => {
+    if (!content) return '';
+    return content[lang] || content['ar'] || '';
   };
 
   return (

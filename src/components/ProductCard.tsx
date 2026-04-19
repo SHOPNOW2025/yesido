@@ -6,6 +6,8 @@ import { useTranslation } from '../LanguageContext';
 import { motion } from 'motion/react';
 import { CountdownTimer } from './CountdownTimer';
 
+import { Link } from 'react-router-dom';
+
 interface ProductCardProps {
   product: Product;
 }
@@ -25,7 +27,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       whileHover={{ y: -5 }}
       className={`bg-white rounded-2xl border ${isFlash ? 'border-brand-red ring-1 ring-brand-red/20' : 'border-gray-100'} overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group relative`}
     >
-      <div className="relative aspect-square bg-gray-50 overflow-hidden">
+      <Link to={`/product/${product.id}`} className="block relative aspect-square bg-gray-50 overflow-hidden">
         <img 
           src={product.image || (product.images && product.images[0])} 
           alt={t(product.name)}
@@ -61,10 +63,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </span>
           </div>
         )}
-      </div>
+      </Link>
       
       <div className={`p-5 flex flex-col flex-1 ${lang === 'ar' ? 'text-right' : 'text-left'}`}>
-        <h3 className="text-gray-800 font-bold text-lg mb-1 line-clamp-1">{t(product.name)}</h3>
+        <Link to={`/product/${product.id}`} className="hover:text-brand-red transition-colors">
+          <h3 className="text-gray-800 font-bold text-lg mb-1 line-clamp-1">{t(product.name)}</h3>
+        </Link>
         <p className="text-gray-400 text-xs mb-3 font-mono">Yesido Accessory</p>
         <p className="text-gray-600 text-sm mb-4 line-clamp-2 h-10 leading-relaxed">
           {t(product.description)}

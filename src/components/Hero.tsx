@@ -4,6 +4,8 @@ import { useSite } from '../SiteContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 
+import { Link } from 'react-router-dom';
+
 interface HeroProps {
   onCatalogOpen: (category?: string) => void;
 }
@@ -12,7 +14,7 @@ export const Hero: React.FC<HeroProps> = ({ onCatalogOpen }) => {
   const { lang, t } = useTranslation();
   const { content, activeHeroKey } = useSite();
 
-  const activeContent = (activeHeroKey && content.navigationHeroes?.[activeHeroKey] && (content.navigationHeroes[activeHeroKey].title.ar || content.navigationHeroes[activeHeroKey].title.en)) 
+  const activeContent = (activeHeroKey && content.navigationHeroes?.[activeHeroKey] && (content.navigationHeroes[activeHeroKey].title?.ar || content.navigationHeroes[activeHeroKey].title?.en)) 
     ? content.navigationHeroes[activeHeroKey] 
     : content.hero;
 
@@ -68,19 +70,19 @@ export const Hero: React.FC<HeroProps> = ({ onCatalogOpen }) => {
                 {t(activeContent.subtitle)}
               </p>
               <div className={`flex flex-wrap items-center gap-4 pt-6 ${lang === 'ar' ? 'justify-end' : 'justify-start'}`}>
-                <button 
-                  onClick={() => onCatalogOpen()}
+                <Link 
+                  to="/catalog"
                   className="bg-brand-red text-white px-10 py-5 rounded-2xl font-black text-lg flex items-center gap-2 hover:bg-white hover:text-brand-red transition-all shadow-2xl shadow-brand-red/40 hover:-translate-y-1"
                 >
                   <span>{t(activeContent.cta)}</span>
                   {lang === 'ar' ? <ArrowLeft size={24} /> : <ChevronRight size={24} />}
-                </button>
-                <button 
-                  onClick={() => onCatalogOpen()}
-                  className="border border-white/20 text-white px-10 py-5 rounded-2xl font-bold hover:bg-white/10 transition-all"
+                </Link>
+                <Link 
+                  to="/catalog"
+                  className="border border-white/20 text-white px-10 py-5 rounded-2xl font-bold hover:bg-white/10 transition-all font-sans"
                 >
                   {lang === 'ar' ? 'عرض الكتالوج' : 'View Catalog'}
-                </button>
+                </Link>
               </div>
             </div>
             
